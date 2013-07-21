@@ -1,0 +1,90 @@
+\chapter{Lösungsansatz}
+Der in dieser Arbeit entwickelte Komponentenkatalog und die Visualiserung der erfassten Daten lösen die eingangs beschriebenen Probleme der Applikations- und Komponentenentwickler. Im Rahmen dieser Arbeit wird der Komponentenkatalog für Navigationstests konzipiert. Dabei werden die Metriken \emph{Distanz}, \emph{Dauer}, \emph{Rotation}, \emph{Kollisionen} sowie verschiedene Fehlerfälle wie \emph{Timeout} (Der Test hat eine zeitliche Beschränkung überschritten), \emph{Aborted} (Die Navigation kann keinen Pfad zu dem Ziel finden) ausgewertet. Das Konzept eines solchen Katalogs lässt sich auch auf weitere Problemstellungen übertragen. 
+
+\section{Funktionsweise des Komponentenkatalogs}
+Der Komponentenkatalog arbeitet in mehreren Schritten. Dabei sind für den Entwickler, der Daten einpflegt und den Entwickler der die Daten abruft nur zwei Schnittstellen offensitlich. Abbildung \ref{fig:arbeitsweise} visualisiert grafisch die einzelnen Arbeitspunkte. Der Komponentenkatalog soll die Kollaboration zwischen Entwicklern fördern. In Abbildung \ref{fig:arbeitsweise} arbeiten \emph{Entwickler A} und \emph{Entwickler B} in dem selben loken Netzwerk (z.B. selbe Organisation). \emph{Entwickler C} hingegen ist physikalisch von den beiden getrennt und kann nur über das Internet mit ihnen kommunizieren.
+\input{Fig-Arbeitsweise.tex}
+
+\subsection{Erstellung der Testszenarien und Synthese von Bagfiles}
+In einem ersten Schritt definieren Entwickler A, B und C ein oder mehrere Testszenario(s). Diese Testszenarien sind ROS-Pakete. Sie beinhalten in der Regel selbst kein oder nur wenig Programmcode. Man bezeichnet sie deshalb auch als Meta-Paket. Sie inkludieren lediglich das entwickelte, so genannte Navigations-Skelton und übergeben ihm mehrere Parameter. Zu den wichtigsten Parametern gehören:
+\begin{itemize}
+\item eine Bezeichnung für die verwendete Navigation
+\item eine Bezeichnung für den verwendeten Roboter
+\item eine Bezeichnung für das Szearnio
+\item eine Liste von Koordinatien, welche die Navigation sukzessive abfährt
+\item eine Adresse des Komponentenkatalogs: Jeder entwickler kann in seinen eigenen Komponentenkatalog pflegen, oder an einem anderen kollaborieren.
+\end{itemize}
+ Das Navigations-Skeleton verrichtet die wesentliche Arbeit im Hintergrund: es überprüft den aktuellen Status des Roboters, liest Information über den Zusatnd, so wie Position, Rotation, Kollisionen etc. und installiert eine Kamera über dem Kopf des Roboters. Dadurch kann zu einem späteren Zeitpunkt ein Video in Vogelperspektive erstellt werden. Es speichert dabei alle Informationen in einem "ROS Bagfile". Diese Datei kann zu einem späteren Zeitpunkt erneut abgespielt werden.
+
+ Die fertigen Testszenarien / Testpakete werden üblicherweise in einen Continous-Integration-Server (im folgenden CI-Server abgekürzt) eingepleft - ein Server der fortlaufend oder durch festgelegte Events ausgelöst, den Programmcode neu compiliert und test. Somit muss der Entwickler nicht manuell nach jeder Codeänderung seine Tests starten, sondern dies wird autonom von einem Server übernommen.
+
+Jedes mal, wenn ein Testszenario vollständig abgespielt wude - unabhängig davon, ob der Roboter seine Zielposition erreicht oder nicht - wird das resultierende Bagfile von dem Navigations-Skeleton auf einen Analyse-Server hochgeladen. Auf Grund der Tatsache, dass die resultierenden Bagfiles oftmals eine Größe von mehreren Gigabyte aufweisen, befindet sich der Analyse-Server typischerweise in dem selben lokalen Netzwerk wie der Computer, auf dem der Test durchgeführt wurde.
+
+Der Test kann kontrolliert aus den folgenden Gründen fehlschlagen:
+\begin{itemize}
+\item Der Test läuft in die zeitliche Beschränkung (Timeout)
+\item Die Navigationskomponente sendet ein Abbruchs-Signal (z.B. weil kein Pfad für die Zielposition gefunden werden kann).
+\item Die Navigationskomponente navigiert falsch: der Roboer steht nicht auf der erwarteten Zielposition
+\end{itemize}
+In jedem dieser Fehlerfälle wird eine enstprechende Status-Nachricht an das Bagfile angehängt. Ansonsten wird es jedoch identisch zu einem erfolgreichen Test behandelt. Auch das Bagfile des fehlgeschlagenen Test wird auf den Analyse-Server hochgeladen.
+
+\subsection{Analyse des Bag-Files und Update des Komponentenkatalogs}
+Auf dem Analyse-Server läuft ein Daemon-Service. Dies ist ein Prozess der ständig aktiv ist und im Hintergrund überprüft ob neue Bagfiles zur Analyse vorhanden sind. Falls keine Dateien gefunden werden ruht der Daemon für ein bestimmtes Zeitintervall.
+
+Sobald er ein neues Bag-file vorfindet startet er den Analyse-Vorgang. Dabei wird das Bagfile erneut abgespielt. Dabei werden alle Roboter-Bewegungen überwacht und kontinuierlich Informationen wie Rotation, Translation, Kollisionen protokolliert. Diese werden letzendlich zu einer Gesamtstatisik zusammengeführt. Parallel dazu wird ein Kamera-Fenster gestartet, welches den Roboter während seiner Navigation durch die Umgebung in Vogelperspektive zeigt. Diese Kamera wurde von dem Navigations-Skeleton in dem vorheringen Synthese schritt in das bag-File eingebettet. Das Kambera-Fenster wird mitgeschnitten. Es soll eine Möglichkeit bieten, die Fahrt des Roboters zu einem späteren Zeitpunkt nachzuvollziehen und über den Browser zu streamen.
+
+Wenn die Simulation vollständig abgespielt wurde werden alle protokollierten Daten an den Komponentenkatalog weitergegeben. Die vollständigen Informationen setzen sich zsuammen aus:
+\newline \newline
+\begin{tabular}{ p{3.6cm}|p{2.5cm}|p{6.9cm} }
+\hline
+%\multicolumn{3}{ p{2cm} }{Team sheet} \\
+Informationstyp & Bezeichnung & Beschreibung \\ \hline
+%\multirow{3}{*}{\pbox{3.6cm}{ In Testszenario  fest"-gelegt. An Komponentenkatalog weitergereicht}}
+\rule{0pt}{3ex} In Testszenario fest-
+ & Szenario: & Die Bezeichnung für das Szearnio,  \\
+ gelegt. An Kompo-
+ & Roboter: & Die Bezeichnung des benutzten Roboters \\
+ nentenkatalog weitergereicht
+ & Navigation: & Die Bezeichnung der benutzten Navigationskomponente \\ 
+ \hline
+Während der Ana-
+ & Distanz: & Zurückgelegte Fahrstrecke in Metern \\
+ lyse bestimmte Metriken.
+ & Rotation: & Die kummulierte Rotation des Roboters in Grad. \\
+ & Dauer: & Die kummulierte Zeitdauer der Roboterfahrt. Überschreitet der Test die maximale Zeitdauer (Timeout), so sind wird hierbei die maximale Zeitdauer verwendet. \\
+ & Kollisionen: & Die Anazahl der Kollisionen kummuliert über die Navigationsdauer \\
+ & Zeitstempel: & Datum und Uhrzeit, zu welchem Zeitpunkt der Test durchgeführt wurde (nicht analysiert) \\
+
+%\multirow{1}{*}{Sonstige}
+Sonstige
+ & Dateiname: & Der Dateiname des analyiserten Bagfiles, damit das Testergebniss bei Verlangen diesem zugeordnet werden kann \\
+\hline
+\end{tabular}
+\newline \newline
+
+
+Es gibt mehrere Gründe, warum der Synthse und der Analyse Schritt getrennt voneinander erfolgen. Zunächst einmal ist es von der resultierenden Programmstruktur sauberer. Codeänderungen können leicht dem einen oder dem andern Paket zugeordnet werden. Desweiteren besteht die Möglichkeit, alle relevanten Statusinformationen und Zustandsänderunge des Roboters nachträglich erneut nachzuvollziehen. Sämtliche Informationen sind in einem Bagfile gespeichert sind. Und können diesem beliebig oft wiedergegeben werden. Dies gilt sowohl für den realen Roboter, wie auch für die Simulation. 
+
+Ein weiterer wichtiger Punkt ist das aufgezeichnete Video. Es ermöglicht ein schnelles Nachvollziehen der Roboterfahrt. Dies ist sowohl zur Fehleranalyse, zum Beispiel im Falle unerwarteter Kollisionen oder eines Timeouts interessant, als auch zur Validierung, dass der Roboter sich korrekt orientiert hat. Es können verschiedene Kamera-Perspektiven aufgenommen werden, etwa die Vogelperspektive in der Simulation, oder das Stereo-Kamerabild im Falle eines realen Roboters. Nebst Kamerainformationen können auch die aktuelle Umgebung, wie vom Roboter wahrgenommen, mitgeschnitten werden. Dies ist interessant in Szenarien, in denen der Roboter selbstständig eine Karte erstellt. 
+Die Videos können gut archiviert werden (ihre Dateigröße ist etwa 50x kleiner als die des entsprechenden Bagfiles). Außerdem können sie bequem über den Browser oder lokal angeschaut werden, ohne dass die ROS-Software auf dem Computer installiert sein muss. 
+
+Für die Aufzeichnung des Videos ist jedoch ein X Server, sowie eine 3D-Grafikkarte nötig. Während dies in der Simulation vorausgesetzt werden kann, ist das auf dem realen Roboter oftmals nicht der Fall.  Durch die klare Trennung von Synthses und Analyse kann somit der gleiche Testcode auf dem Roboter als auch in der Simulation zum Einsatz kommen.
+
+
+\section{Vorteile für Applikations- und Komponentenentwickler}
+\subsection{Vorteile für Applikationsentwickler}
+\subsection{Vorteile für Komponentenentwickler}
+Der eigentliche Komponentenkatalog besteht aus Ansammlung von Testergebniss-Dateien, die mit einem Git-Repository synchronisiert werden. Das Git Versionierungstool ist eine weit verbreitetes Werkzeug, das es mehreren Entwicklern ermöglich, zeitgleich an dem selben Programmcode zu arbeiten. Git ist in der Lage, anschließend die gemachten Änderungen verschiedener Entwickler zusammenzufügen. In vielen Fällen erfolg dies automatisch. Sollte ein automatisches Zusammenfügen unmöglich sein, so hilft das Tool zumindest dem Entwickler, ihm die problematischen Stellen aufzuzueigen, so dass dieser die Änderungen richtig zusammenführt.
+Da der Komponentenkatalog auf diese bestehende Technik aufbaut, ist es sehr einfacht in von vielen verschiedenen Punkten zu aktualisieren. Denkbar ist, dass Entwickler, die physich weit voneinander getrennt arbeiten ihre Simulationsergebnisse dennoch an einer zentralen Stellen synchronisieren und austauschen können.
+
+Der Komponentenkatalog gruppiert so gennanten!!! Testszenarios immer zu einer Einheit. Ein Testszenario wird definiert durch:
+Die verwendten Bezeichnungen können von dem Testerstller selbst beliebig festgelegt werden. Es ist daher empfehlenswert, diese sinnvoll und nach einer Namenskonvention festzulegen, die alle weiteren Entwickler innerhalb des selben Komponentenkatalog verstehen.
+
+Der Komponentenkatalog und die Visualisierung sollen die beiden Entwicklertypen durch unterschiedliche Tools unterstützten. Für den Applikationsentwickler werden Charts zum Vergleich der verschiedenen Testszenarien angeboten. Den Komponentenentwickler interessiert primär die zeitliche Entwicklung eines Testszenarios. 
+
+    Der mit dieser Arbeit entwickelte Komponentenkatalog unterstützt den Applikationsentwickler, in dem er relevante Metriken über die Komponenten in automatisierten Tests automatisch sammelt und visuell aufbereitet. Durch lange automatisierte Testreihen und die resultierenden Mittelwerte sowie Varianzen gewinnt der Entwickler an Sicherheit.
+    Durch den Komponentenkatalog wird dem Entwickler ein Test-Werkzeug an die Hand gegeben, mit dem er automatisiert in kontinuierlichen Abständen seine letzten veröffentlichen Codeänderungen direkt testen kann. 
+
+    Zusätzlich biete das Werkzeug eine Möglichkeit für Entwickler Testausreißer nachzuvollziehen. Zu jedem Test wird automatisch ein Video der kompletten Simulation aufgezeichnet. Dieses lässt sich über den Komponentenkatalog dann direkt im Browser anschauen.
+
+Der entwickelte Komponentenkatalog wurde für Navigationstests konzipiert. 

@@ -1,0 +1,50 @@
+\begin{center}
+\begin{tikzpicture}[
+% Label style
+    label distance=3mm,
+    every label/.style={blue},
+% Event style
+    event/.style={rectangle,thick,draw,fill=yellow!20,text width=3cm,
+		text centered,font=\sffamily,anchor=north},
+    cv/.style={rectangle,thick,draw,fill=yellow!20,text width=6cm,
+		text centered,font=\sffamily,anchor=north},
+    ab/.style={rectangle,thick,draw,fill=yellow!20,text width=6cm,
+		text centered,font=\sffamily,anchor=north},
+% Children and edges style
+    edge from parent/.style={very thick,draw=black!70},
+    edge from parent path={(\tikzparentnode.south) -- ++(0,-1.05cm)
+			-| (\tikzchildnode.north)},
+    level 1/.style={sibling distance=7cm,level distance=1.4cm,
+			growth parent anchor=south,nodes=event},
+    level 2/.style={sibling distance=7cm},
+    level 3/.style={sibling distance=6cm},
+    level 4/.style={sibling distance=3cm}
+%%  For compatability with PGF CVS add the absolute option:
+%   absolute
+    ]
+%% Draw events and edges
+    \node (cv)[cv]{Kmponentenkatalog + VideoServer};
+
+    \node (an1)[event][above=of cv,xshift=-3.5cm]{Analyse}edge[->](cv);
+    \node (s1)[ab][above=of an1]{Upload des Bagfiles auf lokalen Analyse-Server in Oraganisation A}edge[->](an1);
+    \node (ab3)[ab][above=of s1]{Automatisierte Simulation (über CI-Server) oder Ausführen auf Roboter.\newline Synthese von bag-file}edge[->](s1); 
+    \node (a2)[event][above=of ab3,xshift=-2cm]{Testszenario}edge[->](ab3);
+    \node (a1)[event][above=of a2]{Entwickler A}edge[->](a2);
+
+    \node (b2)[event][right=of a2]{Testszenario}edge[->](ab3);
+    \node(b1)[event][above=of b2]{Entwickler B}edge[->](b2);
+
+    \node (an2)[event][right of=an1,xshift=5.5cm]{Analyse}edge[->](cv);
+    \node (s2)[ab][above=of an2]{Upload des Bagfiles auf lokalen Analyse-Server in Oraganisation A}edge[->](an2);
+    \node (c3)[ab][above=of s2]{Automatisierte Simulation (über CI-Server) oder Ausführen auf Roboter.\newline Synthese von bag-file}edge[->](s2); 
+    \node (c2)[event][above=of c3]{Testszenario}edge[->](c3);
+    \node (c1)[event][above=of c2]{Entwickler C}edge[->](c2);
+
+    \node (vis)[cv][below of=cv,yshift=-1cm]{Web-Server mit Programm zur Visualisierung der Daten}edge[->](cv);
+    \node (x1)[event][below of=vis,xshift=-4cm,yshift=-1cm]{Entwickler X}edge[->](vis);
+    \node (y1)[event][below of=vis,yshift=-1cm]{Entwickler Y}edge[->](vis);
+    \node (z1)[event][below of=vis,xshift=4cm,yshift=-1cm]{Entwickler Z}edge[->](vis);
+\end{tikzpicture}
+\captionof{figure}{Funktionsweise}
+\label{fig:arbeitsweise}
+\end{center}

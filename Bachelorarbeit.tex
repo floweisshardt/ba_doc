@@ -1,0 +1,24 @@
+\documentclass{scrreprt}
+\usepackage[ngerman]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{blindtext}
+\usepackage{tikz}
+\usepackage{caption}
+\usepackage{multirow}
+\usepackage{tabularx}
+\setlength{\extrarowheight}{7pt}
+\usetikzlibrary{arrows}
+\usetikzlibrary{shapes.gates.logic.US,trees,positioning,arrows}
+
+
+\begin{document}
+\tableofcontents
+\input{Problemstellung.tex}
+\input{Loesungsansatz.tex}
+\newpage
+\begin{thebibliography}{999}
+\bibitem {ros_robot_list}http://www.ros.org/wiki/Robots
+\end{thebibliography}
+\end{document}

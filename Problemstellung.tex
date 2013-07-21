@@ -1,12 +1,3 @@
-\documentclass{scrreprt}
-\usepackage[ngerman]{babel}
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage{lmodern}
-\usepackage{blindtext}
-
-
-\begin{document}
 \chapter{Problemstellung}
 
 Das Robot Operating System (im folgenden ROS genannt), ist ein Framework mit Schwerpunkt auf der Entwicklung von Roboter-Software. Die Entwicklung begann 2007 und wird heute größtenteils von Willow Garage unter Open Source Lizenz weitergeführt. ROS versteht sich selbst als Ökosystem, das unterschiedlichste Robotertypen mit verschiedener Konfiguration unterstützten möchte. Durch sein modularen Aufbau ist es flexibel genug sowohl in der Service-Robotik als auch bei Industrierobotern Anwendung zu finden. Unter ROS wird jeder Bestandteil eines Robotersystems (Navigation, Bilderkennung, Armregelung, etc.) getrennt und kann daher unabhängig von einander entwickelt werden. Eine solche Funktionseinheit wird in ROS als Paket bezeichnet. Mit diesem Ansatz ist es möglich, sich für unterschiedliche Roboter aus dem großen Angebot vorhandener Pakete die jeweils benötigten zusammenzustellen und somit eine individuelle Roboter-Konfiguration aufzubauen. ROS selbst dienst dabei als Schnittstelle zwischen den verschiendenen Modulen. Die dadurch entstehende Flexibilität spiegelt sich in der langen Liste von 41 Roboter\cite{ros_robot_list}, die erfolgreich unter ROS betrieben werden, wieder.
@@ -18,18 +9,6 @@ Erschwerend kommt hinzu, dass ROS selbst auch kontinuierlich weiterentwickelt wi
 An diesem Punkt möchte die aktuelle Arbeit angreifen. Ich unterscheide dabei zwischen zwei verschiedenen Entwickler-Typen und ihren unterschiedlichen Ansprüchen: \begin{itemize}
 \item Ein \emph{Applikationsentwickler} plant ein konkretes Szenario, entweder lokal oder in einer Simulation. Ein Szenario besteht dabei häufig, aber nicht zwangsläufig, aus einer Umgebung und einem Roboter. Der Applikationsentwickler möchte in dieser Umgebung eine bestimmte Aufgabe erledigen. Für die Problemlölsung sucht er eine Komponente, die seinen Anforderungen genügt. Diese Anforderungen lassen sich meistens auf physikalische Metriken zurückführen. So ist beispielsweiße für ein Navigationsszenario die Minimerung der zurückgelegten Fahrstrecke oder der benötigten Zeit wünschenswert. Für eine andere Aufgabenstellung in welcher der Roboter verschiedene Personen mittels Gesichtserkennung identifiziert ist es denkbar, dass der Entwickler eine robuste Komponente einer schenelleren bevorzugt.
 
-    Der mit dieser Arbeit entwickelte Komponentenkatalog unterstützt den Applikationsentwickler, in dem er relevante Metriken über die Komponenten in automatisierten Tests automatisch sammelt und visuell aufbereitet. Durch lange automatisierte Testreihen und die resultierenden Mittelwerte sowie Varianzen gewinnt der Entwickler an Sicherheit.
-
 \item Ein \emph{Komponentenentwickler} ist selbst Autor einer Komponente und möchte diese kontinuierlich unter den selben Bedingungen testen und validieren. Dadurch erhält er die Bestätigung, dass seine Arbeit zur Qualitätsverbesserung beiträgt. Auch kann es für ihn interssant sein, seine Komponente zusätzlich in weiteren Szenarien zu testen um somit Schwachstellen unter veränderten Bedingungen aufzuzueigen.
 
-    Durch den Komponentenkatalog wird dem Entwickler ein Test-Werkzeug an die Hand gegeben, mit dem er automatisiert in kontinuierlichen Abständen seine letzten veröffentlichen Codeänderungen direkt testen kann. 
-    Zusätzlich biete das Werkzeug eine Möglichkeit für Entwickler Testausreißer nachzuvollziehen. Zu jedem Test wird automatisch ein Video der kompletten Simulation aufgezeichnet. Dieses lässt sich über den Komponentenkatalog dann direkt im Browser anschauen.
 \end{itemize}
-
-Der entwickelte Komponentenkatalog wurde für Navigationstests konzipiert. Dabei werden die Metriken \emph{Distanz},\emph{Dauer},\emph{Rotation},\emph{Kollisionen} sowie verschiedene Fehlerfälle wie \emph{Timeout} (Der Test hat eine zeitliche Beschränkung überschritten), \emph{Aborted} (Die Navigation kann keinen Pfad zu dem Ziel finden) ausgewertet. Das Konzept eines solchen Katalogs lässt sich auch auf weitere Problemstellungen übertragen. 
-
-\newpage
-\begin{thebibliography}{999}
-\bibitem {ros_robot_list}http://www.ros.org/wiki/Robots
-\end{thebibliography}
-\end{document}
