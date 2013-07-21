@@ -42,6 +42,7 @@
  - Interaktionsdiagramm jenksin + navigation_test Komponenten
  - Test+Analyse: Jenkins + Skeleton + Analysis
  - Visualisierung + Bereitstellung: Github + Component-Catalogue + Video-Server (Modul Teil von Component Catalogue, aber auf anderem Server)
+ - Multithreadingmöglichkeit
 
  - Generisch:
    * Skeleton: 
